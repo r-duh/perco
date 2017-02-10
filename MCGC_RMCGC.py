@@ -180,5 +180,5 @@ if __name__ == "__main__":
 	plt.ylim(0, 1.0)
 	plt.xlabel('p')
 	plt.ylabel('S')
-	plt.savefig('/Users/arda/Desktop/SF_gamma23_100av.pdf', format='pdf')
+	plt.savefig('/Users/arda/Desktop/%s_gamma%s_%sav.pdf' % (graphtype, gamma, Nsim), format='pdf')
 	plt.show()
