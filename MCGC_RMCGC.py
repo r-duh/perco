@@ -40,7 +40,7 @@ def build_SF_graph(N, k_min, gamma):
 
     return nx.from_numpy_matrix(adj)    
 
-def ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, kav, graphtype):
+def ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, z, graphtype):
 
 	S_av_RMCGC = []
 	for n in range(Nsim):
@@ -108,7 +108,7 @@ def ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, kav, graphtype):
 
 	return S_av_RMCGC
 
-def ER_SF_MCGC(Nsim, N, kmin, gamma, prob, kav, graphtype):
+def ER_SF_MCGC(Nsim, N, kmin, gamma, prob, z, graphtype):
 
 	S_av_MCGC = []
 	for n in range(Nsim):
@@ -183,11 +183,11 @@ if __name__ == "__main__":
 	kmin = int(sys.argv[3])
 	gamma = float(sys.argv[4])
 	prob = float(sys.argv[5])
-	kav = float(sys.argv[6])
+	z = float(sys.argv[6])
 	graphtype = sys.argv[7]
-	S_av_RMCGC = ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, kav, graphtype)
+	S_av_RMCGC = ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, z, graphtype)
 	print 'RMCGC done'
-	S_av_MCGC = ER_SF_MCGC(Nsim, N, kmin, gamma, prob, kav, graphtype)
+	S_av_MCGC = ER_SF_MCGC(Nsim, N, kmin, gamma, prob, z, graphtype)
 	print 'MCGC done'
 	print 'Time elapsed: ', time.time() - start  
 	
