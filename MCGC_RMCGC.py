@@ -11,6 +11,16 @@ import seaborn as sns
 import time
 
 
+def build_Poisson_graph(N, z):
+    
+    adj = np.zeros((N, N))
+    for i in range(N):
+        for j in range(i):
+            if random.uniform(0, 1) < 1.0*z/N:
+                adj[i, j] = 1
+                adj[j, i] = 1                
+    return nx.from_numpy_matrix(adj)  
+
 def build_SF_graph(N, k_min, gamma):
 
     norm = 0
@@ -30,7 +40,7 @@ def build_SF_graph(N, k_min, gamma):
 
     return nx.from_numpy_matrix(adj)    
 
-def ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, graphtype):
+def ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, kav, graphtype):
 
 	S_av_RMCGC = []
 	for n in range(Nsim):
@@ -43,6 +53,11 @@ def ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, graphtype):
 			G_a = nx.gnp_random_graph(N, prob)
 			G_d = nx.gnp_random_graph(N, prob)
 			G_u = nx.gnp_random_graph(N, prob)
+		elif graphtype == 'PO':
+			G_a = build_Poisson_graph(N, z)
+			G_d = build_Poisson_graph(N, z)
+			G_u = build_Poisson_graph(N, z)			
+			
 		
 		init = np.zeros((N, 2))
 		for i in range(1, N+1):
@@ -93,7 +108,7 @@ def ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, graphtype):
 
 	return S_av_RMCGC
 
-def ER_SF_MCGC(Nsim, N, kmin, gamma, prob, graphtype):
+def ER_SF_MCGC(Nsim, N, kmin, gamma, prob, kav, graphtype):
 
 	S_av_MCGC = []
 	for n in range(Nsim):
@@ -106,7 +121,11 @@ def ER_SF_MCGC(Nsim, N, kmin, gamma, prob, graphtype):
 			G_a = nx.gnp_random_graph(N, prob)
 			G_d = nx.gnp_random_graph(N, prob)
 			G_u = nx.gnp_random_graph(N, prob)
-		
+		elif graphtype == 'PO':
+			G_a = build_Poisson_graph(N, z)
+			G_d = build_Poisson_graph(N, z)
+			G_u = build_Poisson_graph(N, z)	
+			
 		init = np.zeros((N, 2))
 		for i in range(1, N+1):
 			init[i-1, 0] = i
@@ -164,10 +183,11 @@ if __name__ == "__main__":
 	kmin = int(sys.argv[3])
 	gamma = float(sys.argv[4])
 	prob = float(sys.argv[5])
-	graphtype = sys.argv[6]
-	S_av_RMCGC = ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, graphtype)
+	kav = float(sys.argv[6])
+	graphtype = sys.argv[7]
+	S_av_RMCGC = ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, kav, graphtype)
 	print 'RMCGC done'
-	S_av_MCGC = ER_SF_MCGC(Nsim, N, kmin, gamma, prob, graphtype)
+	S_av_MCGC = ER_SF_MCGC(Nsim, N, kmin, gamma, prob, kav, graphtype)
 	print 'MCGC done'
 	print 'Time elapsed: ', time.time() - start  
 	
