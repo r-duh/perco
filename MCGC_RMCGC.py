@@ -59,10 +59,16 @@ def ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, z, graphtype):
 			G_u = build_Poisson_graph(N, z)			
 			
 		
-		init = np.zeros((N, 2))
+		init_a = np.zeros((N, 2))
+		init_d = np.zeros((N, 2))
+		init_u = np.zeros((N, 2))
 		for i in range(1, N+1):
-			init[i-1, 0] = i
-			init[i-1, 1] = random.uniform(0, 1)
+			init_a[i-1, 0] = i
+			init_a[i-1, 1] = random.uniform(0, 1)
+			init_d[i-1, 0] = i
+			init_d[i-1, 1] = random.uniform(0, 1)
+			init_u[i-1, 0] = i
+			init_u[i-1, 1] = random.uniform(0, 1)
 
 		S = np.zeros(len(np.arange(0, 1.0, 0.01)))
 		for ix, p in enumerate(np.arange(0, 1.0, 0.01)):
@@ -73,21 +79,28 @@ def ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, z, graphtype):
 			G_u_temp = G_u.copy()
 
 			#get the nodes to be removed
-			to_be_removed = init[init[:, 1]<p, 0].astype(int)
+			to_be_removed_a = init_a[init_a[:, 1]<p, 0].astype(int)
+			to_be_removed_d = init_d[init_d[:, 1]<p, 0].astype(int)
+			to_be_removed_u = init_u[init_u[:, 1]<p, 0].astype(int)
+			to_be_removed_all = set(to_be_removed_a) | set(to_be_removed_d) | set(to_be_removed_u)
 			
-			if len(to_be_removed)==0:
+			if len(to_be_removed_all)==0:
 				G_a_LCC = max(nx.connected_component_subgraphs(G_a_temp), key=len)
 				G_d_LCC = max(nx.connected_component_subgraphs(G_d_temp), key=len)
 				G_u_LCC = max(nx.connected_component_subgraphs(G_u_temp), key=len)
 				S[ix] = len(set(G_a_LCC.nodes()) & set(G_d_LCC.nodes()) & set(G_u_LCC.nodes()))/float(N)
 			else:
-				while len(to_be_removed)>0:
+				while len(to_be_removed_all)>0:
 					#initial damage on all networks 
-					G_a_temp.remove_nodes_from(to_be_removed)
-					G_d_temp.remove_nodes_from(to_be_removed)
-					G_u_temp.remove_nodes_from(to_be_removed)
+					G_a_temp.remove_nodes_from(to_be_removed_a)
+					G_d_temp.remove_nodes_from(to_be_removed_d)
+					G_u_temp.remove_nodes_from(to_be_removed_u)
 
-					to_be_removed = []
+					to_be_removed_a = []
+					to_be_removed_d = []
+					to_be_removed_u = []
+					to_be_removed_all = []
+					
 					if (len(G_a_temp)==0) | (len(G_d_temp)==0) | (len(G_u_temp)==0):
 						S[ix] = 0.0
 						break
@@ -98,10 +111,11 @@ def ER_SF_RMCGC(Nsim, N, kmin, gamma, prob, z, graphtype):
 						G_u_LCC = max(nx.connected_component_subgraphs(G_u_temp), key=len)
 
 						#compare LCCs and get the extra nodes to be deleted
-						to_be_removed.extend(set(G_a_LCC) - (set(G_d_LCC) | set(G_u_LCC)))
-						to_be_removed.extend(set(G_d_LCC) - (set(G_a_LCC) | set(G_u_LCC)))
-						to_be_removed.extend(set(G_u_LCC) - (set(G_d_LCC) | set(G_a_LCC)))
-
+						to_be_removed_a.extend(set(G_a_LCC) - (set(G_d_LCC) | set(G_u_LCC)))
+						to_be_removed_d.extend(set(G_d_LCC) - (set(G_a_LCC) | set(G_u_LCC)))
+						to_be_removed_u.extend(set(G_u_LCC) - (set(G_d_LCC) | set(G_a_LCC)))
+						to_be_removed_all = set(to_be_removed_a) | set(to_be_removed_d) | set(to_be_removed_u)
+						
 				S[ix] = len(set(G_a_LCC.nodes()) & set(G_d_LCC.nodes()) & set(G_u_LCC.nodes()))/float(N)
 
 		S_av_RMCGC.append(S)    
@@ -126,11 +140,17 @@ def ER_SF_MCGC(Nsim, N, kmin, gamma, prob, z, graphtype):
 			G_d = build_Poisson_graph(N, z)
 			G_u = build_Poisson_graph(N, z)	
 			
-		init = np.zeros((N, 2))
+		init_a = np.zeros((N, 2))
+		init_d = np.zeros((N, 2))
+		init_u = np.zeros((N, 2))
 		for i in range(1, N+1):
-			init[i-1, 0] = i
-			init[i-1, 1] = random.uniform(0, 1)
-
+			init_a[i-1, 0] = i
+			init_a[i-1, 1] = random.uniform(0, 1)
+			init_d[i-1, 0] = i
+			init_d[i-1, 1] = random.uniform(0, 1)
+			init_u[i-1, 0] = i
+			init_u[i-1, 1] = random.uniform(0, 1)
+			
 		S = np.zeros(len(np.arange(0, 1.0, 0.01)))
 		for ix, p in enumerate(np.arange(0, 1.0, 0.01)):
 
@@ -140,21 +160,28 @@ def ER_SF_MCGC(Nsim, N, kmin, gamma, prob, z, graphtype):
 			G_u_temp = G_u.copy()
 
 			#get the nodes to be removed
-			to_be_removed = init[init[:, 1]<p, 0].astype(int)
-			
-			if len(to_be_removed)==0:
+			to_be_removed_a = init_a[init_a[:, 1]<p, 0].astype(int)
+			to_be_removed_d = init_d[init_d[:, 1]<p, 0].astype(int)
+			to_be_removed_u = init_u[init_u[:, 1]<p, 0].astype(int)
+			to_be_removed_all = set(to_be_removed_a) | set(to_be_removed_d) | set(to_be_removed_u)
+						
+			if len(to_be_removed_all)==0:
 				G_a_LCC = max(nx.connected_component_subgraphs(G_a_temp), key=len)
 				G_d_LCC = max(nx.connected_component_subgraphs(G_d_temp), key=len)
 				G_u_LCC = max(nx.connected_component_subgraphs(G_u_temp), key=len)
 				S[ix] = len(set(G_a_LCC.nodes()) & set(G_d_LCC.nodes()) & set(G_u_LCC.nodes()))/float(N)
 			else:
-				while len(to_be_removed)>0:
+				while len(to_be_removed_all)>0:
 					#initial damage on all networks 
-					G_a_temp.remove_nodes_from(to_be_removed)
-					G_d_temp.remove_nodes_from(to_be_removed)
-					G_u_temp.remove_nodes_from(to_be_removed)
+					G_a_temp.remove_nodes_from(to_be_removed_a)
+					G_d_temp.remove_nodes_from(to_be_removed_d)
+					G_u_temp.remove_nodes_from(to_be_removed_u)
 
-					to_be_removed = []
+					to_be_removed_a = []
+					to_be_removed_d = []
+					to_be_removed_u = []
+					to_be_removed_all = []
+					
 					if (len(G_a_temp)==0) | (len(G_d_temp)==0) | (len(G_u_temp)==0):
 						S[ix] = 0.0
 						break
@@ -165,10 +192,11 @@ def ER_SF_MCGC(Nsim, N, kmin, gamma, prob, z, graphtype):
 						G_u_LCC = max(nx.connected_component_subgraphs(G_u_temp), key=len)
 
 						#compare LCCs and get the extra nodes to be deleted
-						to_be_removed.extend(set(G_a_LCC) - (set(G_a_LCC) & set(G_d_LCC) & set(G_u_LCC)))
-						to_be_removed.extend(set(G_d_LCC) - (set(G_a_LCC) & set(G_d_LCC) & set(G_u_LCC)))
-						to_be_removed.extend(set(G_u_LCC) - (set(G_a_LCC) & set(G_d_LCC) & set(G_u_LCC)))
-
+						to_be_removed_a.extend(set(G_a_LCC) - (set(G_a_LCC) & set(G_d_LCC) & set(G_u_LCC)))
+						to_be_removed_d.extend(set(G_d_LCC) - (set(G_a_LCC) & set(G_d_LCC) & set(G_u_LCC)))
+						to_be_removed_u.extend(set(G_u_LCC) - (set(G_a_LCC) & set(G_d_LCC) & set(G_u_LCC)))
+						to_be_removed_all = set(to_be_removed_a) | set(to_be_removed_d) | set(to_be_removed_u)
+						
 				S[ix] = len(set(G_a_LCC.nodes()) & set(G_d_LCC.nodes()) & set(G_u_LCC.nodes()))/float(N)
 
 		S_av_MCGC.append(S)    
@@ -200,5 +228,5 @@ if __name__ == "__main__":
 	plt.ylim(0, 1.0)
 	plt.xlabel('p')
 	plt.ylabel('S')
-	plt.savefig('/Users/arda/Desktop/%s_gamma%s_%sav.pdf' % (graphtype, gamma, Nsim), format='pdf')
+	plt.savefig('/Users/arda/Desktop/%s_gamma%s_%sav_ver2.pdf' % (graphtype, gamma, Nsim), format='pdf')
 	plt.show()
