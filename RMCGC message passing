@@ -1,0 +1,76 @@
+#! /usr/bin/env python
+
+import sys 
+import os
+import math
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+import random
+import seaborn as sns
+import time
+
+
+
+#build networks
+M, N, z = 3, 1000, 3
+adj_alpha = np.zeros((M, N, N))
+adj_alpha[0], G_a = build_Poisson_graph(N, z)
+adj_alpha[1], G_d = build_Poisson_graph(N, z)
+adj_alpha[2], G_u = build_Poisson_graph(N, z)
+
+
+#initialize n_alpha_ijs
+n_alpha_ij = np.zeros((M, N, N))
+#n_alpha_ij_old = np.zeros((M, N, N))
+for a in np.arange(M):
+    for i in np.arange(N):
+        for j in np.arange(N):
+            if adj_alpha[a, i, j] == 1:
+                if random.uniform(0, 1) < 0.5:
+                    n_alpha_ij[a, i, j] = 0
+                else:
+                    n_alpha_ij[a, i, j] = 1
+
+v_ij = np.zeros((N, N))
+n_alpha_ij_init = np.copy(n_alpha_ij)
+
+
+#initial damage
+# layer index: a
+p = 0.55
+init = np.zeros((M, N, 2))
+s_ialpha = np.zeros((M, N))
+for a in range(M):
+    for i in range(0, N):
+        init[a, i, 0] = i
+        init[a, i, 1] = random.uniform(0, 1)
+
+    s_ialpha[a, init[a, init[a, :, 1]<p, 0].astype(int)] = 1
+
+    
+#iterate over equations 1 and 2
+for a_master in np.arange(M):
+
+    prc = 1
+    while prc > 0.001:
+
+        n_alpha_ij_old = np.copy(n_alpha_ij[a_master, :, :])
+
+        for i in np.arange(N):
+            for j in np.arange(N):
+                if adj_alpha[a_master, i, j] == 1:
+                    v_ij_temp = []
+                    for a in np.arange(M):
+                        v_ij_temp.append(s_ialpha[a, i] * (1 - np.prod([(1 - n_alpha_ij[a, l, i]) \
+                                            for l in np.where(adj_alpha[a, i, :]==1)[0][np.where(adj_alpha[a, i, :]==1)[0]!=j]])) + \
+                        (s_ialpha[a, i] * s_ialpha[a, j] * adj_alpha[a, i, j] * np.prod([(1 - n_alpha_ij[a, l, i]) \
+                                            for l in np.where(adj_alpha[a, i, :]==1)[0][np.where(adj_alpha[a, i, :]==1)[0]!=j]])))
+                    v_ij[i, j] = np.sum(v_ij_temp)
+
+                    n_alpha_ij[a_master, i, j] = theta(v_ij[i, j], 2) * adj_alpha[a_master, i, j] * s_ialpha[a_master, i] * s_ialpha[a_master, j] * \
+                                                (1 - np.prod([(1 - n_alpha_ij[a_master, l, i]) \
+                                                for l in np.where(adj_alpha[a_master, i, :]==1)[0][np.where(adj_alpha[a_master, i, :]==1)[0]!=j]]))
+                    #print n_alpha_ij_old[a_master, i, j] == n_alpha_ij[a_master, i, j]
+        prc = np.linalg.norm(n_alpha_ij[a_master, :, :] - n_alpha_ij_old)
+        print 'layer: ', a_master, '|', 'precision: ', prc
