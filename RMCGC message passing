@@ -1,3 +1,16 @@
+#! /usr/bin/env python
+
+import sys 
+import os
+import math
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+import random
+import seaborn as sns
+import time
+
+
 #build networks
 M, N, z = 3, 1000, 3
 adj_alpha = np.zeros((M, N, N))
