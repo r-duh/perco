@@ -12,7 +12,7 @@ import time
 
 
 #build networks
-M, N, z = 3, 200, 2
+M, N, z = 3, 500, 2
 adj_alpha = np.zeros((M, N, N))
 
 #configuration model
@@ -30,7 +30,13 @@ for a in np.arange(M):
     for i in np.arange(N):
         knn[i] = set(np.where(adj_alpha[a, i, :]==1)[0])
     knn_all[a] = knn
+
     
+init = np.zeros((M, N, 2))
+for a in range(M):
+    for i in range(0, N):
+        init[a, i, 0] = i
+        init[a, i, 1] = random.uniform(0, 1)    
 
 start = time.time()
 
@@ -55,13 +61,8 @@ for p in np.arange(0.01, 1.0, 0.01):
     #initial damage
     # layer index: a
 
-    init = np.zeros((M, N, 2))
     s_ialpha = np.zeros((M, N))
     for a in range(M):
-        for i in range(0, N):
-            init[a, i, 0] = i
-            init[a, i, 1] = random.uniform(0, 1)
-
         s_ialpha[a, init[a, init[a, :, 1]<p, 0].astype(int)] = 1
 
     #initialize sigma_ij   
