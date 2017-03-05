@@ -12,7 +12,7 @@ import time
 
 
 #build networks
-M, N, z = 3, 1000, 5
+M, N, z = 3, 1000, 2
 adj_alpha = np.zeros((M, N, N))
 
 #configuration model
@@ -52,7 +52,7 @@ n_alpha_ij_init = np.copy(n_alpha_ij)
 #initial damage
 # layer index: a
 # for p in np.arange(0.9, 1.0, 0.01):
-p = 0.5
+p = 1.0
 init = np.zeros((M, N, 2))
 s_ialpha = np.zeros((M, N))
 for a in range(M):
@@ -92,11 +92,11 @@ for a_master in np.arange(M):
         prc = np.linalg.norm(n_alpha_ij[a_master, :, :] - n_alpha_ij_old)
         print 'layer: ', a_master, '|', 'precision: ', prc
 
-
-    sigma_ij[a_master, i] = s_ialpha[a_master, i] * (1 - np.prod([(1 - n_alpha_ij[a_master, l, i]) \
-                            for l in knn_all[a_master][i] - {j}])) * \
-        (1 - np.prod([1 - s_ialpha[a_pr, i] + s_ialpha[a_pr, i] * (np.prod([(1 - n_alpha_ij[a_pr, l, i]) \
-                    for l in knn_all[a_pr][i]])) for a_pr in np.arange(3)[np.arange(3)!=a_master]]))
+    for i in np.arange(N): 
+        sigma_ij[a_master, i] = s_ialpha[a_master, i] * (1 - np.prod([(1 - n_alpha_ij[a_master, l, i]) \
+                                for l in knn_all[a_master][i]])) * \
+            (1 - np.prod([1 - s_ialpha[a_pr, i] + s_ialpha[a_pr, i] * (np.prod([(1 - n_alpha_ij[a_pr, l, i]) \
+                        for l in knn_all[a_pr][i]])) for a_pr in np.arange(3)[np.arange(3)!=a_master]]))
 
 #Calculate S
 S = 1.0 * np.sum([sigma_ij[a, i] for i in np.arange(N) for a in np.arange(M)]) / (M * N)
